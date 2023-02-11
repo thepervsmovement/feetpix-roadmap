@@ -34,32 +34,6 @@ Highcharts.theme = {
 };
 Highcharts.setOptions(Highcharts.theme);
 
-var chartOptions =  {
-    chart: {
-        type: 'spline'
-    },
-    title: {
-        text: 'Burning Rate'
-    },
-    xAxis: {
-        categories: ['Apples', 'Bananas', 'Oranges']
-    },
-    yAxis: {
-        title: {
-            text: 'NFTs Burned'
-        }
-    },
-    series: [{
-        name: 'Jane',
-        data: [1, 0, 4]
-    }, {
-        name: 'John',
-        data: [5, 7, 3]
-    }]
-};
-
-document.addEventListener('DOMContentLoaded', main);
-
 async function retrieveData() {
     return window.receivedData = await (await fetch("http://ec2-3-120-40-8.eu-central-1.compute.amazonaws.com/response.json")).json();
 }
@@ -74,7 +48,7 @@ function formatDate(timestamp) {
     return text;
 }
 
-function cleanData() {
+function cleanRateData() {
     var cleanedData = {};
     var events = window.receivedData.events;
     for(var event of events) {
@@ -90,13 +64,107 @@ function cleanData() {
 
 async function main() {
     await retrieveData();
-    var cleanedData = cleanData();
-    chartOptions.xAxis.categories = cleanedData.map(it => it.dateFormat);
-    chartOptions.series = [
-        {
-            name : 'Burned',
-            data : cleanedData.map(it => it.count)
-        }
-    ];
-    const chart = Highcharts.chart('container', chartOptions);
+    await drawBurningRate();
+    await drawSupplyRate();
+    await drawFloorPrice();
 }
+
+async function drawBurningRate() {
+    var cleanedData = cleanRateData();
+    var chartOptions =  {
+        chart: {
+            type: 'spline'
+        },
+        title: {
+            text: 'Burning Rate'
+        },
+        xAxis: {
+            categories: cleanedData.map(it => it.dateFormat)
+        },
+        yAxis: {
+            title: {
+                text: 'NFTs Burned'
+            }
+        },
+        series: [
+            {
+                name : 'Burned',
+                data : cleanedData.map(it => it.count)
+            }
+        ]
+    };
+    const chart = Highcharts.chart('burningRate', chartOptions);
+}
+
+async function drawSupplyRate() {
+    var cleanedData = cleanRateData();
+    var supplies = [window.receivedData.totalSupply, ...cleanedData.map(it => it.count)];
+    for(var i = 1; i < supplies.length; i++) {
+        supplies[i] = supplies[i-1] - supplies[i];
+    }
+    var chartOptions =  {
+        chart: {
+            type: 'spline'
+        },
+        title: {
+            text: 'Total Supply'
+        },
+        xAxis: {
+            categories: ["2023-01-07", ...cleanedData.map(it => it.dateFormat)]
+        },
+        yAxis: {
+            title: {
+                text: ''
+            }
+        },
+        series: [
+            {
+                name : 'Remaining Supply',
+                data : supplies
+            }
+        ]
+    };
+    const chart = Highcharts.chart('supplyRate', chartOptions);
+}
+
+async function drawFloorPrice() {
+
+    var chartOptions =  {
+        chart: {
+            type: 'spline'
+        },
+        title: {
+            text: 'Floor Price'
+        },
+        xAxis: {
+            visible : false,
+            categories: window.receivedData.floorPrices.map(it => new Date(it.timestamp).toString())
+        },
+        yAxis: {
+            tickPositioner : function() {
+                var defaultValues = [0.01, 0.1, 1, 10, 100, 1000];
+                var values = [];
+                var max = Math.max.apply(window, window.receivedData.floorPrices.map(it => it.floor_price));
+                for(var val of defaultValues) {
+                    if(max < val && values.length > 1) {
+                        break;
+                    }
+                    values.push(val);
+                }
+                return values;
+            }
+        },
+        series: [
+            {
+                name : '',
+                data : window.receivedData.floorPrices.map(it => ({
+                    name : (it.floor_price + " ETH"),
+                    y : it.floor_price
+                }))
+            }
+        ]
+    };
+    const chart = Highcharts.chart('floorPrice', chartOptions);
+}
+
+document.addEventListener('DOMContentLoaded', main);
