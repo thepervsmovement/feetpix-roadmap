@@ -39,14 +39,14 @@ var chartOptions =  {
         type: 'spline'
     },
     title: {
-        text: 'Fruit Consumption'
+        text: 'Burning Rate'
     },
     xAxis: {
         categories: ['Apples', 'Bananas', 'Oranges']
     },
     yAxis: {
         title: {
-            text: 'Fruit eaten'
+            text: 'NFTs Burned'
         }
     },
     series: [{
@@ -58,6 +58,45 @@ var chartOptions =  {
     }]
 };
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', main);
+
+async function retrieveData() {
+    return window.receivedData = await (await fetch("http://ec2-3-120-40-8.eu-central-1.compute.amazonaws.com/response.json")).json();
+}
+
+function formatDate(timestamp) {
+    var date = new Date(timestamp * 1000);
+    var text = date.getFullYear();
+    text += "-";
+    text += date.getMonth() + 1;
+    text += "-";
+    text += date.getDate();
+    return text;
+}
+
+function cleanData() {
+    var cleanedData = {};
+    var events = window.receivedData.events;
+    for(var event of events) {
+        var dateFormat = formatDate(event.timestamp);
+        (cleanedData[dateFormat] = cleanedData[dateFormat] || {
+            dateFormat,
+            count : 0
+        }).count += event.count;
+    }
+    cleanedData = Object.keys(cleanedData).sort().map(it => cleanedData[it]);
+    return cleanedData;
+}
+
+async function main() {
+    await retrieveData();
+    var cleanedData = cleanData();
+    chartOptions.xAxis.categories = cleanedData.map(it => it.dateFormat);
+    chartOptions.series = [
+        {
+            name : 'Burned',
+            data : cleanedData.map(it => it.count)
+        }
+    ];
     const chart = Highcharts.chart('container', chartOptions);
-});
+}
