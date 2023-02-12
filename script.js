@@ -1,24 +1,18 @@
 Highcharts.theme = {
-    colors: ['#058DC7', '#50B432', '#ED561B', '#DDDF00', '#24CBE5', '#64E572',
+    colors: ['#000000', '#50B432', '#ED561B', '#DDDF00', '#24CBE5', '#64E572',
              '#FF9655', '#FFF263', '#6AF9C4'],
     chart: {
-        backgroundColor: {
-            linearGradient: [0, 0, 500, 500],
-            stops: [
-                [0, 'rgb(255, 255, 255)'],
-                [1, 'rgb(240, 240, 255)']
-            ]
-        },
+        backgroundColor: '#e6ecf2ec'
     },
     title: {
         style: {
-            color: '#000',
+            color: '#000000',
             font: 'bold 16px "Trebuchet MS", Verdana, sans-serif'
         }
     },
     subtitle: {
         style: {
-            color: '#666666',
+            color: '#ffffff',
             font: 'bold 12px "Trebuchet MS", Verdana, sans-serif'
         }
     },
@@ -28,7 +22,7 @@ Highcharts.theme = {
             color: 'black'
         },
         itemHoverStyle:{
-            color: 'gray'
+            color: '#ffffff'
         }
     }
 };
@@ -40,9 +34,8 @@ async function retrieveData() {
 
 function formatDate(timestamp) {
     var date = new Date(timestamp * 1000);
-    var text = date.getFullYear();
-    text += "-";
-    text += date.getMonth() + 1;
+    var 
+    text = date.getMonth() + 1;
     text += "-";
     text += date.getDate();
     return text;
@@ -73,17 +66,17 @@ async function drawBurningRate() {
     var cleanedData = cleanRateData();
     var chartOptions =  {
         chart: {
-            type: 'spline'
+            type: 'bar'
         },
         title: {
-            text: 'Burning Rate'
+            text: '🔥 Feet Burn'
         },
         xAxis: {
             categories: cleanedData.map(it => it.dateFormat)
         },
         yAxis: {
             title: {
-                text: 'NFTs Burned'
+                text: 'Burned'
             }
         },
         series: [
@@ -107,10 +100,11 @@ async function drawSupplyRate() {
             type: 'spline'
         },
         title: {
-            text: 'Total Supply'
+            text: '🔥 Available Feet'
         },
+    
         xAxis: {
-            categories: ["2023-01-07", ...cleanedData.map(it => it.dateFormat)]
+            categories: ["01-07", ...cleanedData.map(it => it.dateFormat)]
         },
         yAxis: {
             title: {
@@ -137,7 +131,7 @@ async function drawFloorPrice() {
             text: 'Floor Price'
         },
         xAxis: {
-            visible : false,
+            visible : true,
             categories: window.receivedData.floorPrices.map(it => new Date(it.timestamp).toString())
         },
         yAxis: {
