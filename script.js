@@ -136,7 +136,7 @@ async function drawSupplyRate() {
 }
 
 async function drawFloorPrice() {
-
+    var floorPrices = Object.values(window.receivedData.floorPrices.reduce((acc, it) => ({...acc, [formatDate(it.timestamp)] : it}), {}));
     var chartOptions =  {
         chart: {
             type: 'spline'
@@ -146,13 +146,13 @@ async function drawFloorPrice() {
         },
         xAxis: {
             visible : true,
-            categories: window.receivedData.floorPrices.map(it => formatDate(it.timestamp))
+            categories: floorPrices.map(it => formatDate(it.timestamp))
         },
         yAxis: {
             tickPositioner : function() {
                 var defaultValues = [0.01, 0.1, 1, 10, 100, 1000];
                 var values = [];
-                var max = Math.max.apply(window, window.receivedData.floorPrices.map(it => it.floor_price));
+                var max = Math.max.apply(window, floorPrices.map(it => it.floor_price));
                 for(var val of defaultValues) {
                     if(max < val && values.length > 1) {
                         break;
@@ -165,7 +165,7 @@ async function drawFloorPrice() {
         series: [
             {
                 name : '',
-                data : window.receivedData.floorPrices.map(it => ({
+                data : floorPrices.map(it => ({
                     name : (`${formatDate(it.timestamp)}: ${it.floor_price} ETH`),
                     y : it.floor_price
                 }))
