@@ -37,8 +37,18 @@ var months = [
 ];
 
 function formatDate(timestamp) {
-    var date = new Date(timestamp * 1000);
+    var date = new Date(timestamp);
     var text = months[date.getMonth()];
+    text += "-";
+    text += date.getDate();
+    return text;
+}
+
+function groupDate(timestamp) {
+    var date = new Date(timestamp);
+    var text = date.getFullYear();
+    text += "-";
+    text += (date.getMonth() + 1);
     text += "-";
     text += date.getDate();
     return text;
@@ -48,9 +58,11 @@ function cleanRateData() {
     var cleanedData = {};
     var events = window.receivedData.events;
     for(var event of events) {
-        var dateFormat = formatDate(event.timestamp);
-        (cleanedData[dateFormat] = cleanedData[dateFormat] || {
-            dateFormat,
+        var timestamp = event.timestamp * 1000;
+        var dateGroup = groupDate(timestamp);
+        (cleanedData[dateGroup] = cleanedData[dateGroup] || {
+            dateGroup,
+            dateFormat : formatDate(timestamp),
             count : 0
         }).count += event.count;
     }
