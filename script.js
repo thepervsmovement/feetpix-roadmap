@@ -32,10 +32,13 @@ async function retrieveData() {
     return window.receivedData = await (await fetch("http://ec2-3-120-40-8.eu-central-1.compute.amazonaws.com/response.json")).json();
 }
 
+var months = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+];
+
 function formatDate(timestamp) {
     var date = new Date(timestamp * 1000);
-    var 
-    text = date.getMonth() + 1;
+    var text = months[date.getMonth()];
     text += "-";
     text += date.getDate();
     return text;
@@ -102,7 +105,6 @@ async function drawSupplyRate() {
         title: {
             text: '🔥 Available Feet'
         },
-    
         xAxis: {
             categories: ["01-07", ...cleanedData.map(it => it.dateFormat)]
         },
@@ -132,7 +134,7 @@ async function drawFloorPrice() {
         },
         xAxis: {
             visible : true,
-            categories: window.receivedData.floorPrices.map(it => new Date(it.timestamp).toString())
+            categories: window.receivedData.floorPrices.map(it => formatDate(it.timestamp))
         },
         yAxis: {
             tickPositioner : function() {
@@ -152,7 +154,7 @@ async function drawFloorPrice() {
             {
                 name : '',
                 data : window.receivedData.floorPrices.map(it => ({
-                    name : (it.floor_price + " ETH"),
+                    name : (`${formatDate(it.timestamp)}: ${it.floor_price} ETH`),
                     y : it.floor_price
                 }))
             }
